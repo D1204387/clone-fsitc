@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一金投信</title>
+    <!-- favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+
+    <link rel="stylesheet" href="style.css" type="text/css">
+
+</head>
+<body>
+<!-- page -->
+<div class="page" id="vueAppTemplate" v-cloak>
+    <!-- popup -->
+    <div v-cloak :class="(alertMessage!='')? 'popup open' : 'popup'">
+        <!-- open -->
+        <div class="pagesize">
+            <div class="popup_area">
+                <h3 class="popup_title" v-html="alertMessage"></h3>
+                <div class="btn" v-if="alertNoContinue">
+                    <a style="cursor:pointer" v-on:click="alertMessage = ''">確定</a>
+                </div>
+                <div class="btn" v-else>
+                    <a style="cursor:pointer" v-on:click="alertContinue">確定</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- wrapper -->
+    <div class="wrapper">
+        <div class="header">
+            <div class="pagesize">
+                <a class="header_logo" href="https://www.fsitc.com.tw/" target="_blank"></a>
+                <div class="web header_inner">
+                    <div class="btn_header">
+                        <a class="line" href="http://line.me/ti/p/%40xmz3656a"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- container -->
+
+
+        <div class="container">
+            <form action="/clone-fsitc/" class="pagesize" id="sForm" method="post">        <!-- 登入會員-->
+                <div class="signIn">
+                    <div class="signInForm">
+                        <div class="signInForm_notice">
+                            <div class="color_red">
+                                <p>【NEW】為維護您的個人資料安全，即日起登入交易系統，須升級帳戶安全防護：</p>
+                                <ol>
+                                    <li>使用者代碼規則：需同時包括英文及數字8~12碼，英文區分大小寫（英文大寫或小寫請自訂）。</li>
+                                    <li>會員密碼設定規則：需同時包括英文及數字8~12碼，英文須包含至少1個大寫+1個小寫。</li>
+                                    <li>請留意英文大小寫有別，若發生使用者代碼或密碼被鎖定，請點擊「忘記使用者代碼或密碼」由系統補發使用者代碼或密碼給您，以完成設定。</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="inputBox">
+                            <h2>會員登入</h2>
+                            <ul class="formboxList">
+                                <li>
+                                    <div class="formbox input">
+                                        <div class="formbox_title">帳號</div>
+                                        <div class="formbox_inner">
+                                            <div class="formbox_inner formbox_function">
+                                                <input type="text" name="userAName" v-model.trim="$v.userAccount.$model" placeholder="請輸入身分證字號、統一編號或護照號碼" maxlength="10" @keyup="ToUpper()" @blur="checkExistUserCode()" v-if="eyeShow" />
+                                                <input type="password" name="userAName" v-model.trim="$v.userAccount.$model" placeholder="請輸入身分證字號、統一編號或護照號碼" maxlength="10" @keyup="ToUpper()" @blur="checkExistUserCode()" v-if="!eyeShow" />
+                                                <a href="javascript:void(0)" class="btn_eye" @click="toggleEye(0, $event)"></a>
+                                                <a href="javascript:void(0)" class="btn_keyboard" @click="toggle">動態鍵盤</a>
+                                                <slide-up-down class="keyboardBox" :active="active" v-cloak>
+                                                    <div class="innerdiv">
+                                                        <div class="alphabet">
+                                                            <a v-for="(item, index) in rndAZ" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                        <div class="btn">
+                                                            <a href="javascript:void(0)" @click="cleanall">清除</a>
+                                                            <a href="javascript:void(0)" @click="removekey">←</a>
+                                                        </div>
+                                                        <div class="number">
+                                                            <a v-for="(item, index) in rndNum" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                    </div>
+                                                </slide-up-down>
+                                            </div>
+                                            <p v-if="$v.userAccount.$error" class="tSmall color_red" v-html="vErrMsg($v.userAccount)"></p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="formbox input">
+                                        <div class="formbox_title caption_toggle">
+                                            使用者代碼
+                                            <span class="caption_toggle_hidden">因應主管機關新制規定，自即日起登入需輸入使用者代碼及密碼，若您尚未完成設定，請<a href="javascript:void(0)" @click="SetCode">前往設定</a></span>
+                                        </div>
+                                        <div class="formbox_inner">
+                                            <div class="formbox_inner formbox_function">
+                                                <input type="text" name="userCode" v-model.trim="$v.userCode.$model" placeholder="請輸入" maxlength="12" v-if="eyeShowcode" />
+                                                <input type="password" name="userCode" v-model.trim="$v.userCode.$model" placeholder="請輸入" maxlength="12" v-if="!eyeShowcode" />
+                                                <a href="javascript:void(0)" class="btn_eye" @click="toggleEye(1, $event)"></a>
+                                                <a href="javascript:void(0)" class="btn_keyboard" @click="togglecode">動態鍵盤</a>
+                                                <slide-up-down class="keyboardBox" :active="activecode" v-cloak>
+                                                    <div class="innerdiv">
+                                                        <div class="alphabet">
+                                                            <a v-for="(item, index) in rndAZ" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                        <div class="alphabet">
+                                                            <a v-for="(item, index) in rndaz" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                        <div class="btn">
+                                                            <a href="javascript:void(0)" @click="cleanall">清除</a>
+                                                            <a href="javascript:void(0)" @click="removekey">←</a>
+                                                        </div>
+                                                        <div class="number">
+                                                            <a v-for="(item, index) in rndNum" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                    </div>
+                                                </slide-up-down>
+                                            </div>
+                                            <p v-if="$v.userCode.$error" class="tSmall color_red" v-html="vErrMsg($v.userCode)"></p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="formbox input">
+                                        <div class="formbox_title">密碼</div>
+                                        <div class="formbox_inner">
+                                            <div class="formbox_inner formbox_function">
+                                                <input type="text" name="userKSC" v-model.trim="$v.userAuth.$model" placeholder="請輸入" maxlength="20" @blur="checkKSC()" v-if="eyeShownum" />
+                                                <input type="password" name="userKSC" v-model.trim="$v.userAuth.$model" placeholder="請輸入" maxlength="20" @blur="checkKSC()" v-if="!eyeShownum" />
+                                                <a href="javascript:void(0)" class="btn_eye hide" @click="toggleEye(2, $event)"></a>
+                                                <a href="javascript:void(0)" class="btn_keyboard" @click="togglenum">動態鍵盤</a>
+                                                <slide-up-down class="keyboardBox" :active="activenum" v-cloak>
+                                                    <div class="innerdiv">
+                                                        <div class="alphabet">
+                                                            <a v-for="(item, index) in rndAZ" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                        <div class="alphabet">
+                                                            <a v-for="(item, index) in rndaz" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                        <div class="btn">
+                                                            <a href="javascript:void(0)" @click="cleanall">清除</a>
+                                                            <a href="javascript:void(0)" @click="removekey">←</a>
+                                                        </div>
+                                                        <div class="number">
+                                                            <a v-for="(item, index) in rndNum" href="javascript:void(0)" @click="addkey(item)">{{item}}</a>
+                                                        </div>
+                                                    </div>
+                                                </slide-up-down>
+                                            </div>
+                                            <p v-if="$v.userAuth.$error" class="tSmall color_red" v-html="vErrMsg($v.userAuth)"></p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="formbox input">
+                                        <div class="formbox_title">驗證碼</div>
+                                        <div class="formbox_inner">
+                                            <div class="formbox_inner formbox_flex formbox_verify">
+                                                <input type="text" name="checkCode" maxlength="4" v-model.trim="$v.checkCode.$model" placeholder="請輸入">
+                                                <img id="vcodeimg" src="images/1.jpg" alt="圖片驗證碼" />
+                                            </div>
+                                            <p v-if="$v.checkCode.$error" class="tSmall color_red" v-html="vErrMsg($v.checkCode)"></p>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="btn btn_main botM3">
+                                <a class="btn_submit" href="javascript:void(0)" v-on:click="submit">登入</a>
+                            </div>
+                            <p class="tBigger tC botM1">
+                                <a href="/Etrade/Login/Reset" class="color_green"><span class="tLine">忘記使用者代碼/密碼</span></a>
+                                <span>&nbsp;|&nbsp;</span>
+                                <a href="https://www.fsitc.com.tw/openacc/open_apply.aspx" target="_blank" class="color_green"><span class="tLine">線上開戶</span></a>
+                            </p>
+                            <p class="tC">僅提供本國自然人及外國自然人線上補發密碼</p>
+                        </div>
+                    </div>
+                    <div class="noticeBox">
+                        <div class="signInForm_notice2 color_red botM1">
+                            <p>【NEW】為維護您的個人資料安全，即日起登入交易系統，須升級帳戶安全防護：</p>
+                            <ol>
+                                <li>使用者代碼規則：需同時包括英文及數字8~12碼，英文區分大小寫（英文大寫或小寫請自訂）。</li>
+                                <li>會員密碼設定規則：需同時包括英文及數字8~12碼，英文須包含至少1個大寫+1個小寫。</li>
+                                <li>請留意英文大小寫有別，若發生使用者代碼或密碼被鎖定，請點擊「忘記使用者代碼或密碼」由系統補發使用者代碼或密碼給您，以完成設定。</li>
+                            </ol>
+                        </div>
+                        <p class="color_red">提醒您：微軟自2022年6月15日起已停止支援IE瀏覽器，建議您透過Chrome、Firefox、Edge等瀏覽器進行操作，以獲得較佳的瀏覽體驗。</p>
+                        <h5>貼心提醒</h5>
+                        <ul>
+                            <li>※為保障您的個人資料安全，建議使用「動態鍵盤」以滑鼠直接輸入身分證字號、使用者密碼及驗證碼。</li>
+                            <li>※使用公用電腦時，提醒您不要讓瀏覽器記憶您的密碼，不使用時請務必隨手登出網路交易畫面。	</li>
+                            <li>※為保障您的交易安全，停止操作一段時間後，系統將自動登出，以保障您的權益。</li>
+                            <li>若您欲查詢相關資料或需協助，歡迎洽詢您專屬理財顧問，或於上班時間（09:00-17:00）致電客戶服務專線 0800-005-908，由客服專員為您說明。</li>
+                        </ul>
+                    </div>
+                </div>
+            </form></div>
+
+
+        <div class="footer">
+            <div class="pagesize">
+                <div class="footer_inner">
+                    <div class="footer_text">
+                        <div class="footer_link">
+
+                            <a href="https://www.fsitc.com.tw/FooterLink.aspx?ID=1006" target="_blank">隱私權政策</a>
+                            <a href="https://www.fsitc.com.tw/FooterLink.aspx?ID=1007" target="_blank">使用本站政策</a>
+                            <a href="https://www.fsitc.com.tw/FooterLink.aspx?ID=1008" target="_blank">投資人資安手冊</a>
+                            <a href="https://www.fsitc.com.tw/FooterLink.aspx?ID=1009" target="_blank">蒐集個資應告知事項</a>
+                        </div>
+                        <div class="footer_info">
+                            <span>第一金證券投資信託股份有限公司 版權所有</span>
+                            <span>台北市10477民權東路三段6號7樓</span>
+                            <span>公司電話：(02)2504-1000</span>
+                            <span>客服中心諮詢專線：0800-005-908 ｜ 客服諮詢傳真：(02)2515-5628 ｜ 客服電子信箱：service@fsitc.com.tw</span>
+                            <span>臨櫃服務：請事先來電客服中心預約</span>
+                            <span>營業人：第一金證券投資信託股份有限公司 ｜ 營利事業統一編號：22102023</span>
+                        </div>
+                    </div>
+                    <div class="footer_map">
+                        <a href="https://www.fsitc.com.tw/ManagerBranch.aspx?ID=3" target="_blank">台北總公司</a>
+                        <a href="https://www.fsitc.com.tw/ManagerBranch.aspx?ID=1" target="_blank">新竹分公司</a>
+                        <a href="https://www.fsitc.com.tw/ManagerBranch.aspx?ID=2" target="_blank">台中分公司</a>
+                        <a href="https://www.fsitc.com.tw/ManagerBranch.aspx?ID=4" target="_blank">高雄分公司</a>
+                    </div>
+                </div>
+                <div class="footer_caution" style="font-weight:bold;font-size:15px">
+                    <p>第一金投信獨立經營管理。本公司系列基金經金管會核准或同意生效，惟不表示絕無風險。基金經理公司以往之經理績效不保證基金之最低投資收益；基金經理公司除盡善良管理人之注意義務外，不負責基金之盈虧，亦不保證最低之收益，投資人申購前應詳閱基金公開說明書。有關基金應負擔之費用（境外基金含分銷費用、反稀釋費用）已揭露於基金之公開說明書或投資人須知中，本公司及各銷售機構備有公開說明書，歡迎索取，或自行至<a href="https://www.fsitc.com.tw" target="_blank">本公司官網</a>、<a href="http://mops.twse.com.tw/" target="_blank">公開資訊觀測站</a>或<a href="http://announce.fundclear.com.tw/MOPSFundWeb/" target="_blank">境外基金資訊觀測站</a>下載。</p>
+                    <p>投資人應注意基金投資之風險包括匯率風險、利率風險、債券交易市場流動性不足之風險及投資無擔保公司債之風險；基金或有因利率變動、債券交易市場流動性不足及定期存單提前解約而影響基金淨值下跌之風險，同時或有受益人大量贖回時，致延遲給付贖回價款之可能。</p>
+                    <p class="color-danger">基金非投資等級債券之投資占顯著比重者，適合能承受較高風險之非保守型之投資人。由於非投資等級債券之信用評等未達投資等級或未經信用評等，且對利率變動的敏感度甚高，故本基金可能會因利率上升、市場流動性下降，或債券發行機構違約不支付本金、利息或破產而蒙受虧損，投資人應審慎評估。本基金不適合無法承擔相關風險之投資人。投資人投資以非投資等級債券為訴求之基金不宜占其投資組合過高之比重。非投資等級債可能投資美國 Rule 144A 債券（境內基金投資比例最高可達基金總資產30％，實際投資上限詳見各基金公開說明書），該債券屬私募性質，易發生流動性不足，財務訊息揭露不完整或價格不透明導致高波動性之風險。</p>
+                    <p class="color-danger">
+                        部分可配息基金配息前未先扣除應負擔之相關費用，且基金的配息可能由基金的收益或本金中支付（各ETF基金或子基金配息前已先扣除應負擔之相關費用且配息不涉及本金）。任何涉及由本金支出的部份，可能導致原始投資金額以同等比例減損。基金配息率不代表基金報酬率，且過去配息率不代表未來配息率；基金淨值可能因市場因素而上下波動。基金經理公司不保證本基金最低之收益率或獲利，配息金額會因操作及收入來源而有變化，且投資之風險無法因分散投資而完全消除，投資人仍應自行承擔相關風險。投資人可至<a href="https://www.fsitc.com.tw" target="_blank">本公司官網</a>查詢最近12個月內由本金支付之配息組成項目。基金配息之年化配息率為估算值，計算公式為「每單位配息金額÷除息日前一日之淨值×一年配息次數× 100％」。各期間報酬率(含息)是假設收益分配均滾入再投資於本基金之期間累積報酬率。
+                    </p>
+                    <p class="color-danger">目標到期基金到期即信託契約終止，經理公司將根據屆時淨資產價值進行償付。目標到期基金非定存之替代品，亦不保證收益分配金額與本金之全額返還。目標到期基金投資組合之持債在無信用風險發生的情況下，隨著愈接近到期日，市場價格將愈接近債券面額，然目標到期基金仍存在違約風險與價格損失風險。目標到期基金以持有債券至到期為主要投資策略，惟其投資組合可能因應贖回款需求、執行信用風險部位管理、資金再投資或適度增進收益等而進行調整；原則上，投資組合中個別債券到期年限以不超過基金實際存續年限為主，其存續期間（duration）將隨著債券存續年限縮短而逐年降低，並在期滿時接近於零。目標到期基金可能持有部分到期日超過或未及基金到期日之單一債券，故投資人將承擔債券再投資風險或價格風險；契約存續期間屆滿前提出買回者，將收取提前買回費用並歸入基金資產，以維護既有投資人利益。買回費用標準詳見公開說明書。目標到期基金不建議投資人從事短線交易並鼓勵投資人持有至基金到期。目標到期基金成立屆滿一定年限後，於基金持有之債券到期時，得投資短天期債券（含短天期公債），所指年限及「短天期債券」定義，詳見公開說明書。</p>
+                    <p>內容涉及新興市場部分，因其波動性與風險程度較高，且政治與經濟情勢穩定度可能低於已開發國家，可能使資產價值受不同程度之影響。 境外基金投資中國證券市場之有價證券，以掛牌上市有價證券及銀行間債券市場為限，除經金管會核准外，投資總額不得超過淨資產價值之20%。中國為外匯管制市場，投資相關有價證券可能有資金無法即時匯回之風險，或可能因特殊情事致延遲給付買回價款，投資人另須留意中國特定政治、經濟、法規與巿場等投資風險。 </p>
+                    <p>匯率走勢可能影響所投資之海外資產而使資產價值變動。投資人以非基金計價幣別之貨幣換匯後投資本基金者，須自行承擔匯率變動之風險，人民幣相較於其他貨幣仍受政府高度控管，中國政府可能因政策性動作或管控金融市場而引導人民幣升貶值，造成人民幣匯率波動，投資人於投資人民幣計價受益權單位時應考量匯率波動風險。南非幣一般被視為高波動、高風險貨幣，投資人應瞭解投資南非幣計價級別所額外承擔之匯率風險。若投資人係以非南非幣申購南非幣計價受益權單位基金，須額外承擔因換匯所生之匯率波動風險，本公司不鼓勵持有南非幣以外之投資人因投機匯率變動目的而選擇南非幣計價受益權單位。倘若南非幣匯率短期內波動過鉅，將明顯影響基金南非幣別計價受益權單位之每單位淨值。本資料提及之經濟走勢預測不必然代表本公司系列基金之績效，基金投資風險請詳閱基金公開說明書。投資人因不同時間進場，將有不同之投資績效，過去之績效亦不代表未來績效之保證。以過去績效進行模擬投資組合之報酬率時，僅為歷史資料模擬投資組合之結果，不代表本投資組合之實際報酬率及未來績效保證，不同時間進行模擬操作，結果可能不同。本資料提及之企業、指數或投資標的，僅為舉例說明之用，不代表任何投資之推薦。有關未成立之基金初期資產配置，僅為暫訂之規劃，實際投資配置可能依市場狀況而改變。</p>
+                    <p>基金風險報酬等級，依投信投顧公會分類標準，由低至高分為RR1~RR5等五個等級。此分類係基於一般市況反映市場價格波動風險，無法涵蓋所有風險，不宜作為投資唯一依據，投資人仍應注意所投資基金之個別風險，並考量個人風險承擔能力、資金可運用期間等，始為投資判斷。基金之風險可能含有產業景氣循環變動、流動性不足、外匯管制、投資地區政經社會變動或其他投資風險。</p>
+                    <p>遞延手續費N級別，持有未滿1、2、3年，手續費率分別為3%、2%、1%，於買回時以申購金額、贖回金額孰低計收，滿3年者免付。</p>
+                    <p>本公司系列基金包含新台幣及外幣計價級別，如投資人以非基金計價幣別之貨幣換匯後申購基金，須自行承擔匯率變動之風險。此外，因投資人與銀行進行外匯交易有賣價與買價之差異，投資人進行換匯時須承擔買賣價差，此價差依各銀行報價而定。由於中國大陸地區實施外匯管制，基金可以透過經理公司申請獲准之合格境外投資機構者(QFII)之額度直接投資中國大陸地區當地證券市場，QFII額度須先兌匯為美元匯入中國大陸地區後再兌換為人民幣，以投資當地人民幣計價之投資商品，使得結轉匯成本因此提高。而人民幣匯率波動可能對該類型每受益權單位淨資產價值造成直接或間接之影響，故申購該類型受益權單位之受益人需承擔人民幣匯率變動之風險。投資人應特別留意，基金因計價幣別不同，投資人申購之受益權單位數為該申購幣別金額除以面額計算，於召開受益人會議時，各計價幣別受益權單位每受益權單位有一表決權，不因投資人取得各級別每受益權單位之成本不同而異。基金外幣計價之受益權單位，於銀行國際金融業務分行(OBU)或國際證券分公司(OSU)銷售者，其銷售對象以非中華民國之居住民為限。</p>
+                    <p><span class="color-danger">各ETF基金或子基金上市/櫃日前（不含當日），經理公司不接受基金受益權單位數之買回；掛牌上市/櫃前參與申購所買入的每單位淨資產價值，不等同於基金掛牌上市/櫃後之價格，參與申購之投資人需自行承擔基金成立日起至上市/櫃日止之期間，基金價格波動所產生折/溢價之風險。</span>有關各ETF基金或子基金特性、投資人應負擔之成本費用及相關投資風險等資訊，交易前應詳閱基金公開說明書。首次買賣槓桿或反向指數股票型基金受益憑證者，除專業機構投資人外，限符合臺灣證券交易所所訂適格條件之投資人始得交易，並簽具風險預告書。第一金臺灣工業菁英30 ETF基金以追蹤標的｢臺灣工業菁英30指數｣之績效表現為目標，依指數特性或市場狀況買進全部或部分成分股，並以指數成分股權重作為個股持股比率之參考。「第一金臺灣工業菁英30ETF證券投資信託基金」並非由臺灣指數股份有限公司贊助、認可、銷售或推廣，且臺灣指數股份有限公司不就使用「臺灣指數公司工業菁英30指數」或該指數於任何特定日期、時間所代表數字之預期結果提供任何明示或默示之擔保或聲明。「臺灣指數公司工業菁英30指數」係由臺灣指數股份有限公司編製及計算；惟臺灣指數股份有限公司不就「臺灣指數公司工業菁英30指數」及之錯誤承擔任何過失或其他賠償責任；且臺灣指數股份有限公司無義務將指數中之任何錯誤告知任何人。</p>
+                    <p>「臺灣指數公司工業菁英30指數」由臺灣指數股份有限公司負責計算及授權第一金投信於「第一金臺灣工業菁英30 ETF基金」中使用該等指數名稱；惟臺灣指數股份有限公司並未贊助、認可或推廣「第一金臺灣工業菁英30 ETF基金」；與該等指數之指數值及其成分股清單有關之一切著作權均歸臺灣指數股份有限公司所有；第一金投信業已就使用該著作權發行該等指數之行為，自臺灣指數股份有限公司取得完整之使用授權，詳見相關基金公開說明書。</p>
+                    <p>【指數編製公司免責聲明】彭博BLOOMERG®係彭博財經有限合夥Bloomberg Finance L.P.之商標及服務標章。BARCLAYS®係巴克萊銀行Barclays Bank Plc之商標及服務標章，且經授權使用之。彭博財經有限合夥與其關係企業，包含彭博指數服務有限公司Bloomberg Index Services Limited (“BISL”)(以下合稱彭博Bloomberg)，或彭博授權人擁有「彭博巴克萊美國10年期以上金融債指數」(以下稱指數)之所有專屬權利。巴克萊銀行、巴克萊資本公司或任何關係企業(以下合稱巴克萊)及彭博皆非本基金之發行人，且巴克萊以及彭博對本基金投資人均不負任何責任、義務。指數係經以第一金投信基金發行人之身分授權使用之。彭博與巴克萊及發行人就指數之唯一關係為指數之授權，此一授權乃經BISL或任何接任人之決定、編撰及計算，不涉及發行人或基金或基金所有人。第一金投信得逕行與巴克萊或相關基金指數進行交易，投資人自第一金投信購得基金，但投資人既不就指數獲取利益亦不就投資基金與彭博或巴克萊產生任何關聯。基金未經彭博或巴克萊贊助、背書、銷售或宣傳。彭博或巴克萊均不對基金之投資合宜性、證券投資之合宜性、指數追蹤相對應或相關市場績效之能力為任何明示或暗示之聲明或保證。彭博或巴克萊未對任何個人或實體就該基金是合法性或適當性作出評論。彭博或巴克萊未參與決定基金之發行時間、價格或數量且不對該決定負責任。彭博或巴克萊無任何義務考量基金之發行人、所有人或任何第三人之需求以決定、編撰或計算指數。彭博或巴克萊對於基金之管理、行銷或交易均不負任何責任或義務。</p>
+                    <p>ETF基金以追蹤標的指數報酬為目標，因此標的指數價格波動劇烈時，基金之淨資產價值表現亦將有波動之風險。此外仍有包括但不限於下列原因致生基金報酬偏離標的指數報酬之情形：1.基金因應申贖或維持所需曝險比例等因素而進行之交易，將使基金淨值受到交易費用、基金其他必要之費用(如：經理費、保管費、上市費等)、有價證券或期貨成交價格或基金整體曝險比例等因素的影響而使本基金報酬與標的指數產生偏離。2.基金指數化策略原則上以完全複製法為主，惟遇特殊情形(包括但不限於成分股公司事件因素、成分股流動性不足、預期標的指數成分股即將異動、標的成分股因屬於人權爭議或軍火武器等相關標的，基於控管政經風險而無法持有、基金因應申贖或指數調整因不同幣別換匯時間差異及其他市場因素等情況使基金難以使用完全複製法策略管理投資組合)，將影響基金整體曝險比率，因而使基金報酬與標的指數產生偏離。3.為符合基金追蹤標的指數績效表現之目標及資金調度需要，基金得從事證券相關商品之交易。因此若持有的證券相關商品部位流動性不足、期貨轉倉正逆價差大、期貨正逆價差波動升高，亦可能造成基金報酬所追蹤指數的偏離。4.基金以新臺幣計價，而基金所投資的有價證券或證券相關商品可能為新臺幣以外之計價貨幣，因此匯率波動將影響基金以新臺幣計算之淨資產價值，可能使基金報酬與標的指數產生偏離。基金上市前參與申購所買入的每單位淨資產價值，不等同於基金上市後之價格，參與申購之投資人需自行承擔基金成立日起至上市日止之期間，基金價格波動所產生折/溢價之風險。基金自上市日起之申購，經理公司將依基金每一營業日所公告「現金申購買回清單」所載之「每申購買回基數約當淨值」加計110%，向申購人預收申購價金。基金受益憑證上市後之買賣成交價格無升降幅度限制，並應依臺灣證交所有關規定辦理。基金所涉之證券市場交易時間不同，因此基金所涉之證券市場交易可能有無法即時完全反應基金投資組合之價格波動風險。另基金的淨值反應其一籃子成分市值總合，惟盤中即時估計淨值與實際基金淨值計算之投組內容亦可能有所差異，可能造成交易資訊傳遞落差之風險。</p>
+                    <p> Solactive AG (以下簡稱“Solactive”)是「Solactive 太空衛星指數」的授權方。基於該指數的金融商品不會被Solactive以任何方式贊助、認可、推廣或銷售，Solactive關於以下事項不得做出任何明示或暗示之陳述、保證:(a)指數成分證券投資之合宜性；(b)質量、準確性和(或)指數之完整性；和(或)(c)任何個人或公司從指數的使用上獲得或將獲得的結果。Solactive不保證指數的準確性和(或)完整性，對任何錯誤或遺漏不承擔任何責任。儘管Solactive對被授權方有義務責任，但Solactive保留更改關於指數和Solactive的計算或公佈方法，不負責與指數相關的任何計算錯誤或任何有關指數發布的不正確性、延遲性或中斷性。Solactive不對任何損害負責，包括但不限於使用(或無法使用)指數造成任何利潤損失、業務，或招致任何特殊、附帶、懲罰性、間接損害。 </p>
+                    <p class="botM1">資料僅供參考，請勿將其視為買賣基金或其他任何投資之建議或要約。本公司自當盡力提供正確資訊，所作任何投資意見與市場分析結果，係依資料製作當時情況進行判斷，惟可能因市場變化而更動，且文中數據、預測或意見可能有脫漏、錯誤，投資標的價格與收益亦可能隨時變動，本公司或關係企業與其相關人等對此不負任何法律責任，投資人應自行判斷投資標的、投資風險，不應將本資料引為投資之唯一依據，若有投資損益或因使用本資料所生之直接或間接損失，應由投資人自行負責。本公司系列基金無受存款保險、保險安定基金或其他相關保護機制之保障。</p>
+                    <p>基金更名資訊：</p>
+                    <ul class="footer_caution_list">
+                        <li>業經金管會於民國111年3月31日金管證投字第1110334700號函核准「第一金全球高收益債券證券投資信託基金」更名為「第一金全球非投資等級債券證券投資信託基金」，並訂於111年5月4日正式更名。</li>
+                        <li>業經金管會於民國111年4月29日金管證投字第1110339235號函核准「歐義銳榮基金─歐義銳榮歐洲高收益基金」更名為「歐義銳榮基金─歐義銳榮歐洲非投資等級債券基金」，並訂於111年5月4日正式更名。</li>
+                        <li>業經金管會於民國111年10月18日金管證投字第1110357443號函核准「第一金優債收息 ETF 傘型證券投資信託基金之第一金彭博巴克萊美國 10 年期以上金融債券指數 ETF 證券投資信託基金」更名為「第一金優債收息 ETF 傘型證券投資信託基金之第一金彭博美國 10 年期以上金融債券指數 ETF 證券投資信託基金」，並訂於111年12月1日正式更名。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="Scripts/jquery-3.6.0.min.js" type="text/javascript"></script>
+<script src="Scripts/vue.2.0.js" type="text/javascript"></script>
+<script src="Scripts/vuelidate.min.js" type="text/javascript"></script>
+<script src="Scripts/validators.min.js" type="text/javascript"></script>
+<script src="Scripts/vue.awesome-swiper.js" type="text/javascript"></script>
+<script type="text/javascript">
+  var mixinArray = []; var componentObjs = {};
+  var rootPath = '/clone-fsitc';
+  Vue.use(vuelidate.default);
+  var _v = validators;
+  var _vwp = vuelidate.withParams;
+</script>
+<script src="Scripts/main.js"></script>
+<script src="Scripts/globalsite.js" type="text/javascript"></script>
+<script src="Scripts/helpers.js"></script>
+
+<script src="Scripts/util.js" type="text/javascript"></script>
+<script src="Scripts/vue.slide-up-down.umd.js" type="text/javascript"></script>
+<script type="text/javascript">
+  Vue.component("slide-up-down", VueSlideUpDown);
+  var mainPageValidationsMixin = {
+    data: function () {
+      return {
+        userAccount: '',
+        userCode: '',
+        userAuth: '',
+        checkCode: null,
+        submitStatus: null
+      }
+    },
+    validations: {
+      userAccount: {
+        required: _vwp({ msg: '請輸入身分證字號、統一編號或護照號碼' }, _v.required),
+        regex: _vwp({ msg: '請輸入正確格式(英文字母需為大寫)' }, _v.helpers.regex('regex', new RegExp('^([A-Z]{0,1}[0-9]{9}$)|^([0-9]{8,9}$)|^([A-Z]{0,2}[0-9]{8}$)'))),
+      },
+      userCode: {
+        required: _vwp({ msg: '請輸入使用者代碼' }, _v.required),
+      },
+      userAuth: {
+        required: _vwp({ msg: '請輸入密碼' }, _v.required),
+      },
+      checkCode: {
+        required: _vwp({ msg: '請輸入驗證碼' }, _v.required),
+      },
+    },
+    methods: {
+      submit: function () {
+        if (this.submitStatus == 'OK') {
+          return;
+        }
+        this.submitStatus = 'PENDING'
+        this.$v.$touch()
+        if (this.$v.$invalid) {
+          this.submitStatus = 'ERROR'
+        } else {
+          this.submitStatus = 'OK'
+          $("#sForm").submit();
+        }
+      },
+    }
+  }
+  mixinArray.push(mainPageValidationsMixin);
+
+  $(function () {
+    //When key up tab focus next input
+    $('body').keydown(function (e) {
+      var key = $(e.target).attr('name');
+      var code = e.keyCode || e.which;
+      if (code == '9') {
+        switch (key) {
+          case 'userAName':
+            $('input[name=userCode]:visible').focus();
+            break;
+          case 'userCode':
+            $('input[name=userKSC]:visible').focus();
+            break;
+          case 'userKSC':
+            $('input[name=checkCode]').focus();
+            break;
+        }
+        return false;
+      }
+    });
+  });
+</script>
+<script src="Scripts/login.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+  var app = new Vue({
+    el: '#vueAppTemplate',
+    mixins: mixinArray,
+    data: {
+      alertNoContinue: true,
+      alertMessage: '', alertBtn: '',
+    },
+    methods: {
+      vErrMsg: function (validateModel) {
+        return getFieldErrMsg(validateModel);
+      },
+      alertContinue: function () {
+        if (this.alertNoContinue == false && typeof this.pageAlert !== "undefined") {
+          this.pageAlert();
+        } else {
+          //console.log("alertContinue function not exsit.")
+          this.alertMessage = '';
+          this.alertBtn = '確定';
+          this.alertNoContinue = true;
+        }
+      },
+    },
+    mounted: function () {
+    },
+    beforeCreate: function () {
+      //IE把placeholder,避免觸發vuelidate
+      if (window.navigator.userAgent.match(/MSIE|Trident/)) {
+        $('input[type=text]').each(function () {
+          var $t = $(this);
+          $t.attr("placeholder", "");
+        });
+        $('input[type=password]').each(function () {
+          var $t = $(this);
+          $t.attr("placeholder", "");
+        });
+      }
+    }
+  });
+
+  //取得vuelidate的錯誤訊息
+  function getFieldErrMsg(validation) {
+    if (validation.$error) {
+      var rtnMsg = [];
+      $.each(validation, function (key, val) {
+        if (key.charAt(0) !== "$" && val == false) {
+          $.each(validation.$params, function (key2, value) {
+            if (key === key2) {
+              rtnMsg.push(value["msg"]);
+            }
+          });
+        }
+      });
+      return rtnMsg.join("<br/>");
+    }
+  }
+</script>
+
+</body>
+</html>
